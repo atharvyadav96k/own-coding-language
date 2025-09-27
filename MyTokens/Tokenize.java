@@ -69,7 +69,10 @@ public class Tokenize {
             }else if (ch == '&'  || ch == '|') {
                 tokens.add(this.token(""+ch, TokenType.LogicalOperator));
                 i++;
-            }else if (Character.isDigit(ch)) {
+            }else if (ch == '<' || ch == '>') {
+                tokens.add(this.token(""+ch, TokenType.CompairOperator));
+                i++;
+            } else if (Character.isDigit(ch)) {
                 // Numbers
                 StringBuilder numBuffer = new StringBuilder();
                 while (i < sourceCode.length() && Character.isDigit(sourceCode.charAt(i))) {

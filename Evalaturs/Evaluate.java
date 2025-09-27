@@ -35,7 +35,17 @@ public class Evaluate {
             Value val = this.mapValue.get(id.getName());
             Boolean b = (Boolean) val;
             return b.getValue();
-        } else {
+        } else if(stmt.getNodeType() == NodeTypes.Compair){
+            Compair comp = (Compair)stmt;
+            int leftAns = this.evaluateExpressionInteger(comp.getLeft());
+            int rightAns = this.evaluateExpressionInteger(comp.getRight());
+            String operator = comp.getOperator();
+            if(operator.equals("<")){
+                return leftAns < rightAns;
+            }else{
+                return leftAns > rightAns;
+            }
+        }else {
             throw new RuntimeException("Invalid statement ");
         }
         return ans;
@@ -110,7 +120,44 @@ public class Evaluate {
                 num.setValue(val);
                 this.mapValue.put(id.getName(), num);
                 System.out.println(id.getName() + " : " + val);
-            } else {
+            } else if (init.getNodeType() == NodeTypes.Compair) {
+                Compair compair = (Compair)init;
+                Stmt left = compair.getLeft();
+                Stmt right = compair.getRight();
+                String operator = compair.getOperator();
+                int leftAns = 0;
+                int rightAns = 0;
+                if(left.getNodeType() == NodeTypes.NumericLiteral){
+                    NumericLiteral num = (NumericLiteral)left;
+                    leftAns = num.value;
+                }else if(left.getNodeType() == NodeTypes.Identifier){
+                    Identifier idf = (Identifier)left;
+                    Value val = this.mapValue.get(idf.getName());
+                    Number num = (Number)val;
+                    leftAns = num.value;
+                }
+                if(right.getNodeType() == NodeTypes.NumericLiteral){
+                    NumericLiteral num = (NumericLiteral)right;
+                    rightAns = num.value;
+                }else if(right.getNodeType() == NodeTypes.Identifier){
+                    Identifier idf = (Identifier)right;
+                    Value val = this.mapValue.get(idf.getName());
+                    Number num = (Number)val;
+                    rightAns = num.value;
+                }
+                System.out.println(leftAns + " : "+rightAns);
+                if(operator.equals("<")){
+                    Boolean bol = new Boolean();
+                    bol.setValue(leftAns < rightAns);
+                    this.mapValue.put(id.getName(), bol);
+                    System.out.println(id.getName()+" : "+(leftAns < rightAns));
+                }else if(operator.equals(">")){
+                    Boolean bol = new Boolean();
+                    bol.setValue(leftAns > rightAns);
+                    this.mapValue.put(id.getName(), bol);
+                    System.out.println(id.getName()+" : "+(leftAns > rightAns));
+                }
+            }else {
                 throw new RuntimeException("Invalid Type");
             }
         } else if (stmt.getNodeType() == NodeTypes.Assignmet) {

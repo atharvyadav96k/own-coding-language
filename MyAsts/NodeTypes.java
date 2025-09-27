@@ -9,5 +9,6 @@ public enum NodeTypes{
     VariableDeclaration,
     Assignmet,
     Condition,
-    Logical
+    Logical,
+    Compair
 }

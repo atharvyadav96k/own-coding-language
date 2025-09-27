@@ -96,7 +96,7 @@ public class AstTree {
                 NumericLiteral num = new NumericLiteral(Integer.parseInt(token.value));
                 stack.push(num);
 
-            } else if (token.type == TokenType.True || token.type == TokenType.False) {
+            }else if (token.type == TokenType.True || token.type == TokenType.False) {
                 BooleanLiteral bl = new BooleanLiteral(token.value);
                 stack.push(bl);
             }else if (token.type == TokenType.BinaryOperation) {
@@ -146,6 +146,28 @@ public class AstTree {
                     i += result.closeIndex;
                 }else{
                     throw new RuntimeException("Invalid Token Type for condition"+next.type);
+                }
+            }else if (token.type == TokenType.CompairOperator) {
+                Stmt left = stack.pop();
+                i++;
+                if(i>= expList.size()) throw new RuntimeException("Expected tokem after operator");
+                Token next = expList.get(i);
+                if(next.type == TokenType.Identifier){
+                    Identifier right = new Identifier(next.value);
+                    Compair comp = new Compair();
+                    comp.setLeft(left);
+                    comp.setOperator(token.value);
+                    comp.setRight(right);
+                    stack.push(comp);
+                }else if(next.type == TokenType.Number){
+                    NumericLiteral right = new NumericLiteral(Integer.parseInt(next.value));
+                    Compair comp = new Compair();
+                    comp.setLeft(left);
+                    comp.setOperator(token.value);
+                    comp.setRight(right);
+                    stack.push(comp);
+                }else{
+                    throw new RuntimeException("Invalid Token Type "+next.type);
                 }
             } else if (token.type == TokenType.Identifier) {
                 stack.push(new Identifier(token.value));
