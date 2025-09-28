@@ -12,6 +12,7 @@ public enum TokenType {
     Int,      
     BinaryOperation,
     Condition,
+    If,
     EOS,
     OpenCurly,
     CloseCurly,

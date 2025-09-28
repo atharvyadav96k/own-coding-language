@@ -7,11 +7,10 @@ import java.util.HashMap;
 public class Evaluate {
     ArrayList<Stmt> program;
     HashMap<String, Value> mapValue = new HashMap<>();
-
     public Evaluate(String code) {
         AstTree tree = new AstTree(code);
         this.program = tree.parse();
-        this.runCode();
+        this.runCode(this.program);
     }
 
     boolean evaluateExpressionBoolean(Stmt stmt) {
@@ -93,13 +92,31 @@ public class Evaluate {
                 Number num = new Number();
                 num.setValue(val);
                 this.mapValue.put(id.getName(), num);
-                System.out.println(id.getName() + " = " + val);
-            } else if (init.getNodeType() == NodeTypes.BooleanLiteral) {
+                System.out.println(id.getName() + " : " + val);
+            } else if (init.getNodeType() == NodeTypes.Identifier) {
+                Identifier idf = (Identifier)init;
+                Value val = this.mapValue.get(idf.getName());
+                if(val.getType() == ValueType.Number){
+                    Number num = (Number)val;
+                    Number newNum = new Number();
+                    newNum.setValue(num.value);
+                    this.mapValue.put(id.getName(), newNum);
+                    System.out.println(id.getName()+ " : "+num.value);
+                }else if(val.getType() == ValueType.Boolean){
+                    Boolean bool = (Boolean)val;
+                    Boolean newBool = new Boolean();
+                    newBool.setValue(bool.getValue());
+                    this.mapValue.put(id.getName(), newBool);
+                    System.out.println(id.getName()+ " : "+bool.value);
+                }else{
+                    throw new RuntimeException("Invalid Type");
+                }
+            }else if (init.getNodeType() == NodeTypes.BooleanLiteral) {
                 boolean val = this.evaluateExpressionBoolean(varDec.getInit());
                 Boolean bol = new Boolean();
                 bol.setValue(val);
                 this.mapValue.put(id.getName(), bol);
-                System.out.println(id.getName() + " = " + val);
+                System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Condition) {
                 Condition condition = (Condition) init;
                 boolean leftAns = this.evaluateExpressionBoolean(condition.getLeftCondition());
@@ -195,11 +212,20 @@ public class Evaluate {
                     throw new RuntimeException("Invalid types and perform operation on it");
                 }
             }
+        }else if (stmt.getNodeType() == NodeTypes.Decision) {
+            Decision des = (Decision)stmt;
+            boolean result = this.evaluateExpressionBoolean(des.getCondition());
+            if(result){
+                this.runCode(des.getProgram());
+            }
         }
     }
 
-    void runCode() {
-        for (Stmt stmt : this.program) {
+
+    void runCode(ArrayList<Stmt> program) {
+        int current = 0;
+        for(;current < program.size();current++){
+            Stmt stmt = program.get(current);
             this.evaluateStmt(stmt);
         }
         System.out.println(this.mapValue.size());

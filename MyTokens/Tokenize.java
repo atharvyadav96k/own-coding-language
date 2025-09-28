@@ -15,9 +15,9 @@ public class Tokenize {
     void reservedTokens() {
         keyWords.put("int", TokenType.Int); 
         keyWords.put("bool", TokenType.Boolean);
-        keyWords.put("if", TokenType.Condition);
         keyWords.put("true", TokenType.True);
         keyWords.put("false", TokenType.False);
+        keyWords.put("if", TokenType.If);
     }
 
     boolean bitWise(char c){

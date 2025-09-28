@@ -10,5 +10,8 @@ public enum NodeTypes{
     Assignmet,
     Condition,
     Logical,
-    Compair
+    Compair,
+    Ifelse,
+    Decision,
+    Block
 }

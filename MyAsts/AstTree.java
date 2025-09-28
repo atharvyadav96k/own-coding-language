@@ -7,13 +7,34 @@ import java.util.Stack;
 public class AstTree {
     private String code;
     private ArrayList<Token> tokens;
-    private ArrayList<Stmt> body = new ArrayList<>();
     private int currToken = 0;
 
     public AstTree(String code) {
         Tokenize t = new Tokenize(code);
         this.tokens = t.run();
-        t.printTokens(tokens);
+        // t.printTokens(this.tokens);
+    }
+
+    // if Condition helper function where it will get all condition (a < 12) like this
+    ArrayList<Token> ifElseConditionHelper(){
+        ArrayList<Token> conditionTokens = new ArrayList<>();
+        while(this.currToken < this.tokens.size() && this.tokens.get(this.currToken).type != TokenType.OpenCurly){
+            Token token = this.tokens.get(this.currToken++);
+            conditionTokens.add(token);
+        }
+        return conditionTokens;
+    }
+
+    // if Body helper function where it will get all tokens in body and convert it into stmts
+
+    // if condition
+    Stmt parseIfElseStmt(){
+        this.currToken++;
+        ArrayList<Token> tokens = ifElseConditionHelper();
+        Stmt condition = this.parseExpr(tokens);
+        ArrayList<Stmt> body = this.parse();
+        Decision decision = new Decision(condition, body);
+        return decision;
     }
 
     // Parse a variable declaration: let a = 12 + 2;
@@ -88,14 +109,11 @@ public class AstTree {
     public Stmt parseExpr(ArrayList<Token> expList) {
         Stack<Stmt> stack = new Stack<>();
         int i = 0;
-
         while (i < expList.size()) {
             Token token = expList.get(i);
-
             if (token.type == TokenType.Number) {
                 NumericLiteral num = new NumericLiteral(Integer.parseInt(token.value));
                 stack.push(num);
-
             }else if (token.type == TokenType.True || token.type == TokenType.False) {
                 BooleanLiteral bl = new BooleanLiteral(token.value);
                 stack.push(bl);
@@ -118,7 +136,6 @@ public class AstTree {
                     Stmt right = parseExpr(result.innerTokens);
                     stack.push(new BinaryExpr(token.value, left, right));
                     i = result.closeIndex; // jump to ')'
-
                 } else {
                     throw new RuntimeException("Invalid value after operator: " + next.value);
                 }
@@ -169,18 +186,17 @@ public class AstTree {
                 }else{
                     throw new RuntimeException("Invalid Token Type "+next.type);
                 }
-            } else if (token.type == TokenType.Identifier) {
+            }else if (token.type == TokenType.Identifier) {
                 stack.push(new Identifier(token.value));
-            } else if (token.type == TokenType.OpenParen) {
+            }else if (token.type == TokenType.OpenParen) {
                 ParenResult result = createListUntilCloseParn(expList, i);
                 Stmt parExp = parseExpr(result.innerTokens);
                 stack.push(parExp);
                 i = result.closeIndex; // jump to ')'
 
-            } else {
+            }else {
                 throw new RuntimeException("Invalid token in expression: " + token.value);
             }
-
             i++;
         }
 
@@ -192,6 +208,7 @@ public class AstTree {
 
     // Main parse loop
     public ArrayList<Stmt> parse() {
+        ArrayList<Stmt> body = new ArrayList<>();
         while (this.currToken < this.tokens.size()) {
             Token token = this.tokens.get(this.currToken);
             if (token.type == TokenType.Int || token.type == TokenType.Boolean) {
@@ -200,11 +217,16 @@ public class AstTree {
             } else if (token.type == TokenType.Identifier) {
                 Assignment assignment = parAssignment();
                 body.add(assignment);
-            } else {
+            } else if (token.type == TokenType.If) {
+                body.add(this.parseIfElseStmt());
+            } else if (token.type == TokenType.CloseCurly) {
+                this.currToken++;
+                break;
+            }else {
                 this.currToken++;
             }
         }
-        return this.body;
+        return body;
     }
 
     // Recursive AST printer
@@ -236,8 +258,8 @@ public class AstTree {
     }
 
     // Print all AST statements
-    public void printAST() {
-        for (Stmt stmt : this.body) {
+    public void printAST(ArrayList<Stmt> body) {
+        for (Stmt stmt : body) {
             printAST(stmt, 0);
             System.out.println();
         }
