@@ -11,6 +11,7 @@ public class Evaluate {
         AstTree tree = new AstTree(code);
         this.program = tree.parse();
         this.runCode(this.program);
+    
     }
 
     boolean evaluateExpressionBoolean(Stmt stmt) {

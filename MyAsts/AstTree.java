@@ -12,7 +12,7 @@ public class AstTree {
     public AstTree(String code) {
         Tokenize t = new Tokenize(code);
         this.tokens = t.run();
-        // t.printTokens(this.tokens);
+        t.printTokens(this.tokens);
     }
 
     // if Condition helper function where it will get all condition (a < 12) like this
@@ -209,6 +209,7 @@ public class AstTree {
     // Main parse loop
     public ArrayList<Stmt> parse() {
         ArrayList<Stmt> body = new ArrayList<>();
+        int depth = 0;
         while (this.currToken < this.tokens.size()) {
             Token token = this.tokens.get(this.currToken);
             if (token.type == TokenType.Int || token.type == TokenType.Boolean) {
@@ -219,9 +220,15 @@ public class AstTree {
                 body.add(assignment);
             } else if (token.type == TokenType.If) {
                 body.add(this.parseIfElseStmt());
+            } else if(token.type == TokenType.OpenCurly){
+                depth++;
+                this.currToken++;
             } else if (token.type == TokenType.CloseCurly) {
                 this.currToken++;
-                break;
+                depth--;
+                if(depth == 0){
+                    break;
+                }
             }else {
                 this.currToken++;
             }

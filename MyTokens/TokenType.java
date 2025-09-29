@@ -18,5 +18,6 @@ public enum TokenType {
     CloseCurly,
     EOF,
     LogicalOperator,
-    CompairOperator
+    CompairOperator,
+    Else
 }
