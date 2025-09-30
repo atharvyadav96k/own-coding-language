@@ -15,5 +15,6 @@ public enum NodeTypes{
     Decision,
     Block,
     Loop,
-    Fun
+    Fun,
+    Call
 }

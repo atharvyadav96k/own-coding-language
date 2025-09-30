@@ -225,17 +225,31 @@ public class Evaluate {
                     break;
                 }
             }
-        }else if (stmt.getNodeType() == NodeTypes.Loop) {
-            Loop loop = (Loop)stmt;
-            Decision des = (Decision)loop.getDecision();
+        } else if (stmt.getNodeType() == NodeTypes.Loop) {
+            Loop loop = (Loop) stmt;
+            Decision des = (Decision) loop.getDecision();
             boolean runLoop = true;
-            while(runLoop){
+            while (runLoop) {
                 runLoop = this.evaluateExpressionBoolean(des.getCondition());
-                if(runLoop){
+                if (runLoop) {
                     this.runCode(des.getProgram());
-                }else{
+                } else {
                     break;
                 }
+            }
+        } else if (stmt.getNodeType() == NodeTypes.Fun) {
+            Fun fun = (Fun)stmt;
+            Function funBody = new Function();
+            funBody.setBody(fun.getBody());
+            this.mapValue.put(fun.getFunName(), funBody);
+        }else if(stmt.getNodeType() == NodeTypes.Call){
+            CallFun call = (CallFun)stmt;
+            Value fun = this.mapValue.get(call.getFunName());
+            if(fun.getType() == ValueType.Function){
+                Function f = (Function)fun;
+                runCode(f.getBody());
+            }else{
+                throw new RuntimeException("Function not defined by this name : "+call.getFunName());
             }
         }
     }

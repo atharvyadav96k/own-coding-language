@@ -21,6 +21,7 @@ public class Tokenize {
         keyWords.put("else", TokenType.Else);
         keyWords.put("while", TokenType.Loop);
         keyWords.put("fun", TokenType.Fun);
+        keyWords.put("call", TokenType.Call);
     }
 
     boolean bitWise(char c){

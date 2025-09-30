@@ -21,5 +21,6 @@ public enum TokenType {
     CompairOperator,
     Else,
     Loop,
-    Fun
+    Fun,
+    Call
 }

@@ -15,8 +15,31 @@ public class AstTree {
         // t.printTokens(this.tokens);
     }
 
+    // Function call
+    Stmt praseFunctionCall(){
+        CallFun cFun = new CallFun();
+        this.currToken++;
+        Token nameFun = this.tokens.get(this.currToken++);
+        cFun.setCallName(nameFun.value);
+        this.currToken++;
+        return cFun;
+    }
+
+    // Implimented function
+    Stmt parseFunction() {
+        Fun function = new Fun();
+        this.currToken++;
+        Token funName = this.tokens.get(this.currToken++);
+        Token openPar = this.tokens.get(this.currToken++);
+        Token closePar = this.tokens.get(this.currToken++);
+        ArrayList<Stmt> body = this.parse();
+        function.setFunName(funName.value);
+        function.setBody(body);
+        return function;
+    }
+
     // Loop
-    Stmt parseLoop(){
+    Stmt parseLoop() {
         this.currToken++;
         ArrayList<Token> tokens = ifElseConditionHelper();
         Stmt condition = this.parseExpr(tokens);
@@ -27,19 +50,21 @@ public class AstTree {
         return loop;
     }
 
-    // if Condition helper function where it will get all condition (a < 12) like this
-    ArrayList<Token> ifElseConditionHelper(){
+    // if Condition helper function where it will get all condition (a < 12) like
+    // this
+    ArrayList<Token> ifElseConditionHelper() {
         ArrayList<Token> conditionTokens = new ArrayList<>();
-        while(this.currToken < this.tokens.size() && this.tokens.get(this.currToken).type != TokenType.OpenCurly){
+        while (this.currToken < this.tokens.size() && this.tokens.get(this.currToken).type != TokenType.OpenCurly) {
             Token token = this.tokens.get(this.currToken++);
             conditionTokens.add(token);
         }
         return conditionTokens;
     }
 
-    // if Body helper function where it will get all tokens in body and convert it into stmts
+    // if Body helper function where it will get all tokens in body and convert it
+    // into stmts
 
-    Stmt parseSingleIfStmt(){
+    Stmt parseSingleIfStmt() {
         this.currToken++;
         ArrayList<Token> tokens = ifElseConditionHelper();
         Stmt condition = this.parseExpr(tokens);
@@ -49,23 +74,23 @@ public class AstTree {
     }
 
     // if condition
-    Stmt parseIfElseStmt(){
+    Stmt parseIfElseStmt() {
         Token cToken = this.tokens.get(this.currToken);
         ArrayList<Stmt> stmts = new ArrayList<>();
         boolean fistIf = false;
-        while(cToken.type == TokenType.If || cToken.type == TokenType.Else){
+        while (cToken.type == TokenType.If || cToken.type == TokenType.Else) {
             cToken = this.tokens.get(this.currToken);
-            if(!fistIf && cToken.type == TokenType.If){
+            if (!fistIf && cToken.type == TokenType.If) {
                 fistIf = true;
                 Stmt stmt = parseSingleIfStmt();
                 stmts.add(stmt);
-            }else if(fistIf && cToken.type == TokenType.Else){
+            } else if (fistIf && cToken.type == TokenType.Else) {
                 Token next = this.tokens.get(this.currToken + 1);
-                if(next.type == TokenType.If){
+                if (next.type == TokenType.If) {
                     this.currToken++;
                     Stmt stmt = parseSingleIfStmt();
                     stmts.add(stmt);
-                }else{
+                } else {
                     Condition cond = new Condition();
                     BooleanLiteral bol = new BooleanLiteral("true");
                     cond.setLeftCondition(bol);
@@ -76,7 +101,7 @@ public class AstTree {
                     stmts.add(decision);
                     break;
                 }
-            }else{
+            } else {
                 break;
             }
         }
@@ -122,6 +147,7 @@ public class AstTree {
     private static class ParenResult {
         ArrayList<Token> innerTokens;
         int closeIndex;
+
         ParenResult(ArrayList<Token> innerTokens, int closeIndex) {
             this.innerTokens = innerTokens;
             this.closeIndex = closeIndex;
@@ -140,9 +166,11 @@ public class AstTree {
                 depth++;
             } else if (t.type == TokenType.CloseParen) {
                 depth--;
-                if (depth == 0) break;
+                if (depth == 0)
+                    break;
             }
-            if (depth > 0) exp.add(t);
+            if (depth > 0)
+                exp.add(t);
             j++;
         }
 
@@ -162,13 +190,14 @@ public class AstTree {
             if (token.type == TokenType.Number) {
                 NumericLiteral num = new NumericLiteral(Integer.parseInt(token.value));
                 stack.push(num);
-            }else if (token.type == TokenType.True || token.type == TokenType.False) {
+            } else if (token.type == TokenType.True || token.type == TokenType.False) {
                 BooleanLiteral bl = new BooleanLiteral(token.value);
                 stack.push(bl);
-            }else if (token.type == TokenType.BinaryOperation) {
+            } else if (token.type == TokenType.BinaryOperation) {
                 Stmt left = stack.pop();
                 i++;
-                if (i >= expList.size()) throw new RuntimeException("Expected value after operator");
+                if (i >= expList.size())
+                    throw new RuntimeException("Expected value after operator");
                 Token next = expList.get(i);
 
                 if (next.type == TokenType.Number) {
@@ -188,19 +217,20 @@ public class AstTree {
                     throw new RuntimeException("Invalid value after operator: " + next.value);
                 }
 
-            }else if (token.type == TokenType.LogicalOperator) {
+            } else if (token.type == TokenType.LogicalOperator) {
                 Stmt left = stack.pop();
                 i++;
-                if(i >= expList.size()) throw new RuntimeException("Expected value afte operator");
+                if (i >= expList.size())
+                    throw new RuntimeException("Expected value afte operator");
                 Token next = expList.get(i);
-                if(next.type == TokenType.True || next.type == TokenType.False){
+                if (next.type == TokenType.True || next.type == TokenType.False) {
                     BooleanLiteral right = new BooleanLiteral(next.value);
                     Condition bEx = new Condition();
                     bEx.setConitionType(token.value);
                     bEx.setLeftCondition(left);
                     bEx.setRightCondition(right);
                     stack.push(bEx);
-                }else if(next.type == TokenType.OpenParen){
+                } else if (next.type == TokenType.OpenParen) {
                     ParenResult result = createListUntilCloseParn(expList, i);
                     Stmt right = parseExpr(result.innerTokens);
                     Condition bEx = new Condition();
@@ -209,40 +239,41 @@ public class AstTree {
                     bEx.setRightCondition(right);
                     stack.push(bEx);
                     i += result.closeIndex;
-                }else{
-                    throw new RuntimeException("Invalid Token Type for condition"+next.type);
+                } else {
+                    throw new RuntimeException("Invalid Token Type for condition" + next.type);
                 }
-            }else if (token.type == TokenType.CompairOperator) {
+            } else if (token.type == TokenType.CompairOperator) {
                 Stmt left = stack.pop();
                 i++;
-                if(i>= expList.size()) throw new RuntimeException("Expected tokem after operator");
+                if (i >= expList.size())
+                    throw new RuntimeException("Expected tokem after operator");
                 Token next = expList.get(i);
-                if(next.type == TokenType.Identifier){
+                if (next.type == TokenType.Identifier) {
                     Identifier right = new Identifier(next.value);
                     Compair comp = new Compair();
                     comp.setLeft(left);
                     comp.setOperator(token.value);
                     comp.setRight(right);
                     stack.push(comp);
-                }else if(next.type == TokenType.Number){
+                } else if (next.type == TokenType.Number) {
                     NumericLiteral right = new NumericLiteral(Integer.parseInt(next.value));
                     Compair comp = new Compair();
                     comp.setLeft(left);
                     comp.setOperator(token.value);
                     comp.setRight(right);
                     stack.push(comp);
-                }else{
-                    throw new RuntimeException("Invalid Token Type "+next.type);
+                } else {
+                    throw new RuntimeException("Invalid Token Type " + next.type);
                 }
-            }else if (token.type == TokenType.Identifier) {
+            } else if (token.type == TokenType.Identifier) {
                 stack.push(new Identifier(token.value));
-            }else if (token.type == TokenType.OpenParen) {
+            } else if (token.type == TokenType.OpenParen) {
                 ParenResult result = createListUntilCloseParn(expList, i);
                 Stmt parExp = parseExpr(result.innerTokens);
                 stack.push(parExp);
                 i = result.closeIndex; // jump to ')'
 
-            }else {
+            } else {
                 throw new RuntimeException("Invalid token in expression: " + token.value);
             }
             i++;
@@ -270,16 +301,20 @@ public class AstTree {
                 body.add(this.parseIfElseStmt());
             } else if (token.type == TokenType.Loop) {
                 body.add(this.parseLoop());
-            }else if(token.type == TokenType.OpenCurly){
+            } else if (token.type == TokenType.Fun) {
+                body.add(this.parseFunction());
+            } else if (token.type == TokenType.Call) {
+                body.add(this.praseFunctionCall());
+            }else if (token.type == TokenType.OpenCurly) {
                 depth++;
                 this.currToken++;
             } else if (token.type == TokenType.CloseCurly) {
                 this.currToken++;
                 depth--;
-                if(depth == 0){
+                if (depth == 0) {
                     break;
                 }
-            }else {
+            } else {
                 this.currToken++;
             }
         }
@@ -288,7 +323,8 @@ public class AstTree {
 
     // Recursive AST printer
     private void printAST(Stmt node, int level) {
-        if (node == null) return;
+        if (node == null)
+            return;
         for (int i = 0; i < level; i++)
             System.out.print("  ");
 
