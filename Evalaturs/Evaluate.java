@@ -7,11 +7,12 @@ import java.util.HashMap;
 public class Evaluate {
     ArrayList<Stmt> program;
     HashMap<String, Value> mapValue = new HashMap<>();
+
     public Evaluate(String code) {
         AstTree tree = new AstTree(code);
         this.program = tree.parse();
         this.runCode(this.program);
-    
+
     }
 
     boolean evaluateExpressionBoolean(Stmt stmt) {
@@ -35,17 +36,17 @@ public class Evaluate {
             Value val = this.mapValue.get(id.getName());
             Boolean b = (Boolean) val;
             return b.getValue();
-        } else if(stmt.getNodeType() == NodeTypes.Compair){
-            Compair comp = (Compair)stmt;
+        } else if (stmt.getNodeType() == NodeTypes.Compair) {
+            Compair comp = (Compair) stmt;
             int leftAns = this.evaluateExpressionInteger(comp.getLeft());
             int rightAns = this.evaluateExpressionInteger(comp.getRight());
             String operator = comp.getOperator();
-            if(operator.equals("<")){
+            if (operator.equals("<")) {
                 return leftAns < rightAns;
-            }else{
+            } else {
                 return leftAns > rightAns;
             }
-        }else {
+        } else {
             throw new RuntimeException("Invalid statement ");
         }
         return ans;
@@ -95,24 +96,24 @@ public class Evaluate {
                 this.mapValue.put(id.getName(), num);
                 System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Identifier) {
-                Identifier idf = (Identifier)init;
+                Identifier idf = (Identifier) init;
                 Value val = this.mapValue.get(idf.getName());
-                if(val.getType() == ValueType.Number){
-                    Number num = (Number)val;
+                if (val.getType() == ValueType.Number) {
+                    Number num = (Number) val;
                     Number newNum = new Number();
                     newNum.setValue(num.value);
                     this.mapValue.put(id.getName(), newNum);
-                    System.out.println(id.getName()+ " : "+num.value);
-                }else if(val.getType() == ValueType.Boolean){
-                    Boolean bool = (Boolean)val;
+                    System.out.println(id.getName() + " : " + num.value);
+                } else if (val.getType() == ValueType.Boolean) {
+                    Boolean bool = (Boolean) val;
                     Boolean newBool = new Boolean();
                     newBool.setValue(bool.getValue());
                     this.mapValue.put(id.getName(), newBool);
-                    System.out.println(id.getName()+ " : "+bool.value);
-                }else{
+                    System.out.println(id.getName() + " : " + bool.value);
+                } else {
                     throw new RuntimeException("Invalid Type");
                 }
-            }else if (init.getNodeType() == NodeTypes.BooleanLiteral) {
+            } else if (init.getNodeType() == NodeTypes.BooleanLiteral) {
                 boolean val = this.evaluateExpressionBoolean(varDec.getInit());
                 Boolean bol = new Boolean();
                 bol.setValue(val);
@@ -139,43 +140,43 @@ public class Evaluate {
                 this.mapValue.put(id.getName(), num);
                 System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Compair) {
-                Compair compair = (Compair)init;
+                Compair compair = (Compair) init;
                 Stmt left = compair.getLeft();
                 Stmt right = compair.getRight();
                 String operator = compair.getOperator();
                 int leftAns = 0;
                 int rightAns = 0;
-                if(left.getNodeType() == NodeTypes.NumericLiteral){
-                    NumericLiteral num = (NumericLiteral)left;
+                if (left.getNodeType() == NodeTypes.NumericLiteral) {
+                    NumericLiteral num = (NumericLiteral) left;
                     leftAns = num.value;
-                }else if(left.getNodeType() == NodeTypes.Identifier){
-                    Identifier idf = (Identifier)left;
+                } else if (left.getNodeType() == NodeTypes.Identifier) {
+                    Identifier idf = (Identifier) left;
                     Value val = this.mapValue.get(idf.getName());
-                    Number num = (Number)val;
+                    Number num = (Number) val;
                     leftAns = num.value;
                 }
-                if(right.getNodeType() == NodeTypes.NumericLiteral){
-                    NumericLiteral num = (NumericLiteral)right;
+                if (right.getNodeType() == NodeTypes.NumericLiteral) {
+                    NumericLiteral num = (NumericLiteral) right;
                     rightAns = num.value;
-                }else if(right.getNodeType() == NodeTypes.Identifier){
-                    Identifier idf = (Identifier)right;
+                } else if (right.getNodeType() == NodeTypes.Identifier) {
+                    Identifier idf = (Identifier) right;
                     Value val = this.mapValue.get(idf.getName());
-                    Number num = (Number)val;
+                    Number num = (Number) val;
                     rightAns = num.value;
                 }
-                System.out.println(leftAns + " : "+rightAns);
-                if(operator.equals("<")){
+                System.out.println(leftAns + " : " + rightAns);
+                if (operator.equals("<")) {
                     Boolean bol = new Boolean();
                     bol.setValue(leftAns < rightAns);
                     this.mapValue.put(id.getName(), bol);
-                    System.out.println(id.getName()+" : "+(leftAns < rightAns));
-                }else if(operator.equals(">")){
+                    System.out.println(id.getName() + " : " + (leftAns < rightAns));
+                } else if (operator.equals(">")) {
                     Boolean bol = new Boolean();
                     bol.setValue(leftAns > rightAns);
                     this.mapValue.put(id.getName(), bol);
-                    System.out.println(id.getName()+" : "+(leftAns > rightAns));
+                    System.out.println(id.getName() + " : " + (leftAns > rightAns));
                 }
-            }else {
+            } else {
                 throw new RuntimeException("Invalid Type");
             }
         } else if (stmt.getNodeType() == NodeTypes.Assignmet) {
@@ -209,26 +210,41 @@ public class Evaluate {
                     bol.setValue(val);
                     this.mapValue.put(id.getName(), bol);
                     System.out.println(id.getName() + " : " + val);
-                }else{
+                } else {
                     throw new RuntimeException("Invalid types and perform operation on it");
                 }
             }
-        }else if (stmt.getNodeType() == NodeTypes.Decision) {
-            Decision des = (Decision)stmt;
-            boolean result = this.evaluateExpressionBoolean(des.getCondition());
-            if(result){
-                this.runCode(des.getProgram());
+        } else if (stmt.getNodeType() == NodeTypes.Ifelse) {
+            Ifelse stmts = (Ifelse) stmt;
+            ArrayList<Stmt> condition = stmts.getConditions();
+            for (Stmt decision : condition) {
+                Decision des = (Decision) decision;
+                boolean result = this.evaluateExpressionBoolean(des.getCondition());
+                if (result) {
+                    this.runCode(des.getProgram());
+                    break;
+                }
+            }
+        }else if (stmt.getNodeType() == NodeTypes.Loop) {
+            Loop loop = (Loop)stmt;
+            Decision des = (Decision)loop.getDecision();
+            boolean runLoop = true;
+            while(runLoop){
+                runLoop = this.evaluateExpressionBoolean(des.getCondition());
+                if(runLoop){
+                    this.runCode(des.getProgram());
+                }else{
+                    break;
+                }
             }
         }
     }
 
-
     void runCode(ArrayList<Stmt> program) {
         int current = 0;
-        for(;current < program.size();current++){
+        for (; current < program.size(); current++) {
             Stmt stmt = program.get(current);
             this.evaluateStmt(stmt);
         }
-        System.out.println(this.mapValue.size());
     }
 }

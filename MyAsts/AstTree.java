@@ -12,7 +12,19 @@ public class AstTree {
     public AstTree(String code) {
         Tokenize t = new Tokenize(code);
         this.tokens = t.run();
-        t.printTokens(this.tokens);
+        // t.printTokens(this.tokens);
+    }
+
+    // Loop
+    Stmt parseLoop(){
+        this.currToken++;
+        ArrayList<Token> tokens = ifElseConditionHelper();
+        Stmt condition = this.parseExpr(tokens);
+        ArrayList<Stmt> body = this.parse();
+        Decision decision = new Decision(condition, body);
+        Loop loop = new Loop();
+        loop.setDecision(decision);
+        return loop;
     }
 
     // if Condition helper function where it will get all condition (a < 12) like this
@@ -27,14 +39,50 @@ public class AstTree {
 
     // if Body helper function where it will get all tokens in body and convert it into stmts
 
-    // if condition
-    Stmt parseIfElseStmt(){
+    Stmt parseSingleIfStmt(){
         this.currToken++;
         ArrayList<Token> tokens = ifElseConditionHelper();
         Stmt condition = this.parseExpr(tokens);
         ArrayList<Stmt> body = this.parse();
         Decision decision = new Decision(condition, body);
         return decision;
+    }
+
+    // if condition
+    Stmt parseIfElseStmt(){
+        Token cToken = this.tokens.get(this.currToken);
+        ArrayList<Stmt> stmts = new ArrayList<>();
+        boolean fistIf = false;
+        while(cToken.type == TokenType.If || cToken.type == TokenType.Else){
+            cToken = this.tokens.get(this.currToken);
+            if(!fistIf && cToken.type == TokenType.If){
+                fistIf = true;
+                Stmt stmt = parseSingleIfStmt();
+                stmts.add(stmt);
+            }else if(fistIf && cToken.type == TokenType.Else){
+                Token next = this.tokens.get(this.currToken + 1);
+                if(next.type == TokenType.If){
+                    this.currToken++;
+                    Stmt stmt = parseSingleIfStmt();
+                    stmts.add(stmt);
+                }else{
+                    Condition cond = new Condition();
+                    BooleanLiteral bol = new BooleanLiteral("true");
+                    cond.setLeftCondition(bol);
+                    cond.setRightCondition(bol);
+                    cond.setConitionType("&");
+                    ArrayList<Stmt> body = this.parse();
+                    Decision decision = new Decision(cond, body);
+                    stmts.add(decision);
+                    break;
+                }
+            }else{
+                break;
+            }
+        }
+        Ifelse iE = new Ifelse();
+        iE.setConditions(stmts);
+        return iE;
     }
 
     // Parse a variable declaration: let a = 12 + 2;
@@ -220,7 +268,9 @@ public class AstTree {
                 body.add(assignment);
             } else if (token.type == TokenType.If) {
                 body.add(this.parseIfElseStmt());
-            } else if(token.type == TokenType.OpenCurly){
+            } else if (token.type == TokenType.Loop) {
+                body.add(this.parseLoop());
+            }else if(token.type == TokenType.OpenCurly){
                 depth++;
                 this.currToken++;
             } else if (token.type == TokenType.CloseCurly) {

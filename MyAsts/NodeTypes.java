@@ -13,5 +13,7 @@ public enum NodeTypes{
     Compair,
     Ifelse,
     Decision,
-    Block
+    Block,
+    Loop,
+    Fun
 }

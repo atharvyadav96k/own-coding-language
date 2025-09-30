@@ -19,5 +19,7 @@ public enum TokenType {
     EOF,
     LogicalOperator,
     CompairOperator,
-    Else
+    Else,
+    Loop,
+    Fun
 }
