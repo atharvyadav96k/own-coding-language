@@ -16,5 +16,8 @@ public enum NodeTypes{
     Block,
     Loop,
     Fun,
-    Call
+    Call,
+    String,
+    StringLiteral,
+    Print
 }

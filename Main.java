@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 public class Main {
     public static void main(String[] args) {
-        Path filePath = Paths.get(args[0]);
+        Path filePath = Paths.get("code.da");
         try {
             String code = new String(Files.readAllBytes(filePath));
             new Evaluate(code);

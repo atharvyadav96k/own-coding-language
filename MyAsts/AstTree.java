@@ -116,7 +116,6 @@ public class AstTree {
         Token idTok = this.tokens.get(this.currToken++);
         Token eqTok = this.tokens.get(this.currToken++);
         Identifier id = new Identifier(idTok.value);
-
         ArrayList<Token> exprTokens = new ArrayList<>();
         while (this.currToken < this.tokens.size() && this.tokens.get(this.currToken).type != TokenType.EOS) {
             exprTokens.add(this.tokens.get(this.currToken++));
@@ -190,7 +189,7 @@ public class AstTree {
             if (token.type == TokenType.Number) {
                 NumericLiteral num = new NumericLiteral(Integer.parseInt(token.value));
                 stack.push(num);
-            } else if (token.type == TokenType.True || token.type == TokenType.False) {
+            }else if (token.type == TokenType.True || token.type == TokenType.False) {
                 BooleanLiteral bl = new BooleanLiteral(token.value);
                 stack.push(bl);
             } else if (token.type == TokenType.BinaryOperation) {
@@ -285,6 +284,39 @@ public class AstTree {
         return stack.pop();
     }
 
+    public Stmt parsePrint(){
+        this.currToken++;
+        Token tok = this.tokens.get(this.currToken++);
+        Print p = new Print();
+        if(tok.type == TokenType.Number){
+            NumericLiteral num = new NumericLiteral(Integer.parseInt(tok.value));
+            p.setPrint(num);
+        }else if(tok.type == TokenType.Boolean){
+            BooleanLiteral bol = new BooleanLiteral(tok.value);
+            p.setPrint(bol);
+        }else if(tok.type == TokenType.Identifier){
+            Identifier id = new Identifier(tok.value);
+            p.setPrint(id);
+        }else{
+            throw new RuntimeException("Print only support vairables not "+tok.value);
+        }
+        return p;
+    }
+    // print parser
+    public ArrayList<Token> getUntilEOS(){
+        ArrayList<Token> tokens = new ArrayList<>();
+        while(this.currToken < this.tokens.size()){
+            Token token = this.tokens.get(this.currToken);
+            if(token.type != TokenType.EOS){
+                tokens.add(token);
+            }else{
+                break;
+            }
+        }
+        return tokens;
+    }
+
+
     // Main parse loop
     public ArrayList<Stmt> parse() {
         ArrayList<Stmt> body = new ArrayList<>();
@@ -305,6 +337,8 @@ public class AstTree {
                 body.add(this.parseFunction());
             } else if (token.type == TokenType.Call) {
                 body.add(this.praseFunctionCall());
+            } else if (token.type == TokenType.Print) {
+                body.add(this.parsePrint());
             }else if (token.type == TokenType.OpenCurly) {
                 depth++;
                 this.currToken++;

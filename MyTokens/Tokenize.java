@@ -22,6 +22,7 @@ public class Tokenize {
         keyWords.put("while", TokenType.Loop);
         keyWords.put("fun", TokenType.Fun);
         keyWords.put("call", TokenType.Call);
+        keyWords.put("print", TokenType.Print);
     }
 
     boolean bitWise(char c){
@@ -47,7 +48,6 @@ public class Tokenize {
 
         while (i < sourceCode.length()) {
             char ch = sourceCode.charAt(i);
-
             // Single-character tokens
             if (ch == '(') {
                 tokens.add(this.token("(", TokenType.OpenParen));

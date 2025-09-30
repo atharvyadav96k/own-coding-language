@@ -84,6 +84,36 @@ public class Evaluate {
         return ans;
     }
 
+    String evaluateExpressionString(Stmt stmt){
+        StringBuffer stb = new StringBuffer();
+        if (stmt.getNodeType() == NodeTypes.NumericLiteral) {
+            NumericLiteral num = (NumericLiteral) (stmt);
+            stb.append(num.value+"");
+        } else if (stmt.getNodeType() == NodeTypes.BinaryExpr) {
+            BinaryExpr b = (BinaryExpr) stmt;
+            Stmt left = b.left;
+            Stmt right = b.right;
+            if (!b.operator.equals("+")) {
+                throw new RuntimeException("Can't perform operation on String : "+b.operator);
+            } 
+            String leftAns = this.evaluateExpressionString(left);
+            String rightAns = this.evaluateExpressionString(right);
+            stb.append(leftAns + rightAns);
+        } else if (stmt.getNodeType() == NodeTypes.Identifier) {
+            Identifier id = (Identifier) stmt;
+            Value v = (Value) mapValue.get(id.getName());
+            if (v == null) {
+                throw new RuntimeException(id.getName() + " : is not defined");
+            } else if (v.getType() == ValueType.Null) {
+                throw new RuntimeException("Can't perform operation on Null Value " + id.getName() + " = null");
+            }
+            if (v.getType() == ValueType.Number) {
+                Number num = (Number) v;
+                stb.append(num.value);
+            }
+        }
+        return stb.toString();
+    }
     void evaluateStmt(Stmt stmt) {
         if (stmt.getNodeType() == NodeTypes.VariableDeclaration) {
             VariableDeclaration varDec = (VariableDeclaration) stmt;
@@ -94,7 +124,6 @@ public class Evaluate {
                 Number num = new Number();
                 num.setValue(val);
                 this.mapValue.put(id.getName(), num);
-                System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Identifier) {
                 Identifier idf = (Identifier) init;
                 Value val = this.mapValue.get(idf.getName());
@@ -103,13 +132,11 @@ public class Evaluate {
                     Number newNum = new Number();
                     newNum.setValue(num.value);
                     this.mapValue.put(id.getName(), newNum);
-                    System.out.println(id.getName() + " : " + num.value);
                 } else if (val.getType() == ValueType.Boolean) {
                     Boolean bool = (Boolean) val;
                     Boolean newBool = new Boolean();
                     newBool.setValue(bool.getValue());
                     this.mapValue.put(id.getName(), newBool);
-                    System.out.println(id.getName() + " : " + bool.value);
                 } else {
                     throw new RuntimeException("Invalid Type");
                 }
@@ -118,7 +145,6 @@ public class Evaluate {
                 Boolean bol = new Boolean();
                 bol.setValue(val);
                 this.mapValue.put(id.getName(), bol);
-                System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Condition) {
                 Condition condition = (Condition) init;
                 boolean leftAns = this.evaluateExpressionBoolean(condition.getLeftCondition());
@@ -131,14 +157,12 @@ public class Evaluate {
                 } else {
                     throw new RuntimeException("Invalid operator");
                 }
-                System.out.println(id.getName() + " : " + val.value);
                 this.mapValue.put(id.getName(), val);
             } else if (init.getNodeType() == NodeTypes.BinaryExpr) {
                 int val = this.evaluateExpressionInteger(init);
                 Number num = new Number();
                 num.setValue(val);
                 this.mapValue.put(id.getName(), num);
-                System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Compair) {
                 Compair compair = (Compair) init;
                 Stmt left = compair.getLeft();
@@ -164,19 +188,18 @@ public class Evaluate {
                     Number num = (Number) val;
                     rightAns = num.value;
                 }
-                System.out.println(leftAns + " : " + rightAns);
                 if (operator.equals("<")) {
                     Boolean bol = new Boolean();
                     bol.setValue(leftAns < rightAns);
                     this.mapValue.put(id.getName(), bol);
-                    System.out.println(id.getName() + " : " + (leftAns < rightAns));
                 } else if (operator.equals(">")) {
                     Boolean bol = new Boolean();
                     bol.setValue(leftAns > rightAns);
                     this.mapValue.put(id.getName(), bol);
-                    System.out.println(id.getName() + " : " + (leftAns > rightAns));
                 }
-            } else {
+            } else if (init.getNodeType() == NodeTypes.StringLiteral) {
+                String str = this.evaluateExpressionString(init);
+            }else {
                 throw new RuntimeException("Invalid Type");
             }
         } else if (stmt.getNodeType() == NodeTypes.Assignmet) {
@@ -188,13 +211,11 @@ public class Evaluate {
                 Boolean bol = new Boolean();
                 bol.setValue(val);
                 this.mapValue.put(id.getName(), bol);
-                System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.NumericLiteral || init.getNodeType() == NodeTypes.BinaryExpr) {
                 int val = this.evaluateExpressionInteger(assignment.getInit());
                 Number num = new Number();
                 num.setValue(val);
                 this.mapValue.put(id.getName(), num);
-                System.out.println(id.getName() + " : " + val);
             } else if (init.getNodeType() == NodeTypes.Identifier) {
                 Identifier idf = (Identifier) init;
                 Value value = this.mapValue.get(idf.getName());
@@ -203,13 +224,11 @@ public class Evaluate {
                     Number num = new Number();
                     num.setValue(val);
                     this.mapValue.put(id.getName(), num);
-                    System.out.println(id.getName() + " : " + val);
                 } else if (value.getType() == ValueType.Boolean) {
                     boolean val = this.evaluateExpressionBoolean(assignment.getInit());
                     Boolean bol = new Boolean();
                     bol.setValue(val);
                     this.mapValue.put(id.getName(), bol);
-                    System.out.println(id.getName() + " : " + val);
                 } else {
                     throw new RuntimeException("Invalid types and perform operation on it");
                 }
@@ -250,6 +269,28 @@ public class Evaluate {
                 runCode(f.getBody());
             }else{
                 throw new RuntimeException("Function not defined by this name : "+call.getFunName());
+            }
+        }else if(stmt.getNodeType() == NodeTypes.Print){
+            Print p = (Print)stmt;
+            Stmt print = p.getPrint();
+            if(print.getNodeType() == NodeTypes.NumericLiteral){
+                NumericLiteral num = (NumericLiteral)print;
+                System.out.println(num.getValue());
+            }else if(print.getNodeType() == NodeTypes.BooleanLiteral){
+                BooleanLiteral bol = (BooleanLiteral)print;
+                System.out.println(bol.getValue());
+            }else if(print.getNodeType() == NodeTypes.Identifier){
+                Identifier id = (Identifier)print;
+                Value val = this.mapValue.get(id.getName());
+                if(val.getType() == ValueType.Boolean){
+                    Boolean bol = (Boolean)val;
+                    System.out.println(bol.value);
+                }else if(val.getType() == ValueType.Number){
+                    Number num = (Number)val;
+                    System.out.println(num.getValue());
+                }else{
+                    throw new RuntimeException("Invalid type to print : "+val.getType());
+                }
             }
         }
     }

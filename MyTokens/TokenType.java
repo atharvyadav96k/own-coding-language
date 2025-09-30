@@ -22,5 +22,6 @@ public enum TokenType {
     Else,
     Loop,
     Fun,
-    Call
+    Call,
+    Print
 }
