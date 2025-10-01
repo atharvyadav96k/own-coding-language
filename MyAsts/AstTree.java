@@ -123,7 +123,7 @@ public class AstTree {
         this.currToken++; // skip EOS
 
         Stmt init = parseExpr(exprTokens);
-        VariableDeclaration varDecl = new VariableDeclaration(id, init);
+        VariableDeclaration varDecl = new VariableDeclaration(id, init, letTok.type);
         return varDecl;
     }
 

@@ -84,36 +84,7 @@ public class Evaluate {
         return ans;
     }
 
-    String evaluateExpressionString(Stmt stmt){
-        StringBuffer stb = new StringBuffer();
-        if (stmt.getNodeType() == NodeTypes.NumericLiteral) {
-            NumericLiteral num = (NumericLiteral) (stmt);
-            stb.append(num.value+"");
-        } else if (stmt.getNodeType() == NodeTypes.BinaryExpr) {
-            BinaryExpr b = (BinaryExpr) stmt;
-            Stmt left = b.left;
-            Stmt right = b.right;
-            if (!b.operator.equals("+")) {
-                throw new RuntimeException("Can't perform operation on String : "+b.operator);
-            } 
-            String leftAns = this.evaluateExpressionString(left);
-            String rightAns = this.evaluateExpressionString(right);
-            stb.append(leftAns + rightAns);
-        } else if (stmt.getNodeType() == NodeTypes.Identifier) {
-            Identifier id = (Identifier) stmt;
-            Value v = (Value) mapValue.get(id.getName());
-            if (v == null) {
-                throw new RuntimeException(id.getName() + " : is not defined");
-            } else if (v.getType() == ValueType.Null) {
-                throw new RuntimeException("Can't perform operation on Null Value " + id.getName() + " = null");
-            }
-            if (v.getType() == ValueType.Number) {
-                Number num = (Number) v;
-                stb.append(num.value);
-            }
-        }
-        return stb.toString();
-    }
+    
     void evaluateStmt(Stmt stmt) {
         if (stmt.getNodeType() == NodeTypes.VariableDeclaration) {
             VariableDeclaration varDec = (VariableDeclaration) stmt;
@@ -197,8 +168,6 @@ public class Evaluate {
                     bol.setValue(leftAns > rightAns);
                     this.mapValue.put(id.getName(), bol);
                 }
-            } else if (init.getNodeType() == NodeTypes.StringLiteral) {
-                String str = this.evaluateExpressionString(init);
             }else {
                 throw new RuntimeException("Invalid Type");
             }

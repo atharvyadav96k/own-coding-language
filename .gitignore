@@ -1,2 +1,5 @@
-code.da
-.gitignore
+*.da
+*.xml
+*.log
+*.exe
+*.jar
