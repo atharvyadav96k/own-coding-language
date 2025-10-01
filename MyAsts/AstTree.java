@@ -1,5 +1,5 @@
 package MyAsts;
-
+// creating Tree for tokens to help in execution time
 import MyTokens.*;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -15,7 +15,7 @@ public class AstTree {
         // t.printTokens(this.tokens);
     }
 
-    // Function call
+    // create stmt for function call which will call function in execution time
     Stmt praseFunctionCall(){
         CallFun cFun = new CallFun();
         this.currToken++;
@@ -25,7 +25,7 @@ public class AstTree {
         return cFun;
     }
 
-    // Implimented function
+    // creates a body for function as well as set function name
     Stmt parseFunction() {
         Fun function = new Fun();
         this.currToken++;
@@ -38,7 +38,7 @@ public class AstTree {
         return function;
     }
 
-    // Loop
+    // creates body for loop and stores condition for loops in execution time
     Stmt parseLoop() {
         this.currToken++;
         ArrayList<Token> tokens = ifElseConditionHelper();
@@ -50,8 +50,9 @@ public class AstTree {
         return loop;
     }
 
-    // if Condition helper function where it will get all condition (a < 12) like
-    // this
+  
+    // helper function to stores tokens of if condition
+    // ex if(a<10) it will store tokens (a < 10) and return it to make its codition
     ArrayList<Token> ifElseConditionHelper() {
         ArrayList<Token> conditionTokens = new ArrayList<>();
         while (this.currToken < this.tokens.size() && this.tokens.get(this.currToken).type != TokenType.OpenCurly) {
@@ -61,9 +62,7 @@ public class AstTree {
         return conditionTokens;
     }
 
-    // if Body helper function where it will get all tokens in body and convert it
-    // into stmts
-
+    // This function helps to create if stmt by storing its condition and body
     Stmt parseSingleIfStmt() {
         this.currToken++;
         ArrayList<Token> tokens = ifElseConditionHelper();
@@ -73,7 +72,7 @@ public class AstTree {
         return decision;
     }
 
-    // if condition
+    // ladder if this function creates single stmt for complete if(){}else if(){}else{}
     Stmt parseIfElseStmt() {
         Token cToken = this.tokens.get(this.currToken);
         ArrayList<Stmt> stmts = new ArrayList<>();
@@ -91,6 +90,7 @@ public class AstTree {
                     Stmt stmt = parseSingleIfStmt();
                     stmts.add(stmt);
                 } else {
+                    // else body will have always true condition so at the end it will execute
                     Condition cond = new Condition();
                     BooleanLiteral bol = new BooleanLiteral("true");
                     cond.setLeftCondition(bol);
@@ -112,11 +112,16 @@ public class AstTree {
 
     // Parse a variable declaration: let a = 12 + 2;
     public VariableDeclaration parseVarStmt() {
+        // Take type equls to operator 
         Token letTok = this.tokens.get(this.currToken++);
         Token idTok = this.tokens.get(this.currToken++);
         Token eqTok = this.tokens.get(this.currToken++);
         Identifier id = new Identifier(idTok.value);
         ArrayList<Token> exprTokens = new ArrayList<>();
+        // Take expression and eveuate 
+        // ex : int a = 12 + 2;
+        // int a = 3;
+        // int a = (12 + 2) - 5;
         while (this.currToken < this.tokens.size() && this.tokens.get(this.currToken).type != TokenType.EOS) {
             exprTokens.add(this.tokens.get(this.currToken++));
         }
@@ -157,7 +162,7 @@ public class AstTree {
     private ParenResult createListUntilCloseParn(ArrayList<Token> expTokens, int startIndex) {
         ArrayList<Token> exp = new ArrayList<>();
         int j = startIndex + 1;
-        int depth = 1; // count nested '('
+        int depth = 1; 
 
         while (j < expTokens.size() && depth > 0) {
             Token t = expTokens.get(j);
@@ -181,6 +186,7 @@ public class AstTree {
     }
 
     // Parse simple expressions with numbers, identifiers, +, -, and ()
+    // This function create tree for each and every expression for correct execution
     public Stmt parseExpr(ArrayList<Token> expList) {
         Stack<Stmt> stack = new Stack<>();
         int i = 0;
@@ -284,6 +290,7 @@ public class AstTree {
         return stack.pop();
     }
 
+    // function to display tree
     public Stmt parsePrint(){
         this.currToken++;
         Token tok = this.tokens.get(this.currToken++);
@@ -316,8 +323,7 @@ public class AstTree {
         return tokens;
     }
 
-
-    // Main parse loop
+    // start creting tree from here
     public ArrayList<Stmt> parse() {
         ArrayList<Stmt> body = new ArrayList<>();
         int depth = 0;

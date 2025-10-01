@@ -11,7 +11,7 @@ public class Tokenize {
         this.sourceCode = sourcecode;
         this.reservedTokens();
     }
-
+    // reserver the Tokens as per your need 
     void reservedTokens() {
         keyWords.put("int", TokenType.Int); 
         keyWords.put("bool", TokenType.Boolean);
@@ -41,11 +41,10 @@ public class Tokenize {
             System.out.println(token.value +" : "+token.type);
         }
     }
-
+    // create meaning full string by skipping unwanted spaces
     public ArrayList<Token> run() {
         ArrayList<Token> tokens = new ArrayList<>();
         int i = 0;
-
         while (i < sourceCode.length()) {
             char ch = sourceCode.charAt(i);
             // Single-character tokens
@@ -108,7 +107,6 @@ public class Tokenize {
                 throw new RuntimeException("Unrecognized token: " + ch);
             }
         }
-
         tokens.add(this.token("EndOfFile", TokenType.EOF));
         return tokens;
     }

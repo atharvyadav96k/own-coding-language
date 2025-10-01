@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 public class Evaluate {
     ArrayList<Stmt> program;
+    // Here this map stores functions and variables
     HashMap<String, Value> mapValue = new HashMap<>();
 
     public Evaluate(String code) {
@@ -15,6 +16,8 @@ public class Evaluate {
 
     }
 
+    // This function solve complex problems for boolean expression
+    // ex : (true & false) or (true | false) or (a < 10)
     boolean evaluateExpressionBoolean(Stmt stmt) {
         boolean ans = false;
         if (stmt.getNodeType() == NodeTypes.BooleanLiteral) {
@@ -52,6 +55,9 @@ public class Evaluate {
         return ans;
     }
 
+    // This function solves all expression for integers
+    // ex : 12 + 12
+    // 12 + 2 - (12 - a)
     int evaluateExpressionInteger(Stmt stmt) {
         int ans = 0;
         if (stmt.getNodeType() == NodeTypes.NumericLiteral) {
@@ -84,7 +90,7 @@ public class Evaluate {
         return ans;
     }
 
-    
+    // Here started execution of Stmt by their category
     void evaluateStmt(Stmt stmt) {
         if (stmt.getNodeType() == NodeTypes.VariableDeclaration) {
             VariableDeclaration varDec = (VariableDeclaration) stmt;
@@ -264,6 +270,7 @@ public class Evaluate {
         }
     }
 
+    // This code passes each and ever stmt to evaluate for line by line execution
     void runCode(ArrayList<Stmt> program) {
         int current = 0;
         for (; current < program.size(); current++) {
